@@ -1,92 +1,145 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+![Bolder Flight Systems Logo](img/logo-words_75.png) &nbsp; &nbsp; ![Arduino Logo](img/arduino_logo_75.png)
+
 # terabee
+Driver for the [Terabee TeraRanger Hub](https://www.terabee.com/shop/lidar-tof-range-finders/teraranger-tower-evo/). This library is compatible with Arduino and CMake build systems.
+   * [License](LICENSE.md)
+   * [Changelog](CHANGELOG.md)
+   * [Contributing guide](CONTRIBUTING.md)
 
-Driver for TeraBee time-of-flight sensors
+# Description
+Range from up to 8 sensors can be sampled over UART.
 
-## Getting started
+# Installation
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Arduino
+Use the Arduino Library Manager to install this library or clone to your Arduino/libraries folder. This library is added as:
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.com/bolderflight/software/terabee.git
-git branch -M main
-git push -uf origin main
+```C++
+#include "terabee.h"
 ```
 
-## Integrate with your tools
+An example Arduino executable is located in: *examples/arduino/terabee_example/terabee_example.ino*. Teensy 3.x, 4.x, and LC devices are used for testing under Arduino and this library should be compatible with other Arduino devices.
 
-- [ ] [Set up project integrations](https://gitlab.com/bolderflight/software/terabee/-/settings/integrations)
+## CMake
+CMake is used to build this library, which is exported as a library target called *teragee*. The header is added as:
 
-## Collaborate with your team
+```C++
+#include "terabee.h"
+```
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+The library can be also be compiled stand-alone using the CMake idiom of creating a *build* directory and then, from within that directory issuing:
 
-## Test and Deploy
+```
+cmake .. -DMCU=MK66FX1M0
+make
+```
 
-Use the built-in continuous integration in GitLab.
+This will build the library and an example executable called *terabee_example*. The example executable source file is located at *examples/cmake/terabee_example.cc*. Notice that the *cmake* command includes a define specifying the microcontroller the code is being compiled for. This is required to correctly configure the code, CPU frequency, and compile/linker options. The available MCUs are:
+   * MK20DX128
+   * MK20DX256
+   * MK64FX512
+   * MK66FX1M0
+   * MKL26Z64
+   * IMXRT1062_T40
+   * IMXRT1062_T41
+   * IMXRT1062_MMOD
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+These are known to work with the same packages used in Teensy products. Also switching packages is known to work well, as long as it's only a package change.
 
-***
+Each target also has a *_hex*, for creating the hex file to upload to the microcontroller, and an *_upload* for using the [Teensy CLI Uploader](https://www.pjrc.com/teensy/loader_cli.html) to flash the Teensy. Instructions for setting up your build environment can be found in our [build-tools repo](https://github.com/bolderflight/build-tools).
 
-# Editing this README
+# Namespace
+This library is within the namespace *bfs*.
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+# Terabee
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+## Quick example
+Below is a quick example of setting up and polling the sensor data on Serial1 using Arduino notation.
 
-## Name
-Choose a self-explaining name for your project.
+```C++
+#include "terabee.h"
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+bfs::Terabee range(&Serial1);
+bfs::Terabee::RangeData data;
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+void setup() {
+  Serial.begin(115200);
+  while (!Serial) {}
+  if (!range.Begin()) {
+    Serial.println("Error initializing and configuring sensor");
+    while (1) {}
+  }
+}
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+void loop() {
+  if (range.Read(&data)) {
+    for (int8_t i = 0; i < data.MAX_CH; i++) {
+      Serial.print("Sensor: ");
+      Serial.print(i);
+      Serial.print("\tNew Data: ");
+      Serial.print(data.sensor[i].updated);
+      Serial.print("\tRange (m): ");
+      Serial.println(data.sensor[i].range_m);
+    }
+  }
+}
+```
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+## RangeData and SensorData
+This struct defines the range data returned from the *Terabee* object. The struct is defined as:
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+```C++
+struct SensorData {
+  bool updated;
+  float range_m;
+};
+struct RangeData {
+  static constexpr int8_t MAX_CH = 8;
+  SensorData sensor[MAX_CH];
+};
+```
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+*RangeData* is a struct consisting of an array of *SensorData* objects. Each *SensorData* object gives feedback about whether that sensor was updated and the measured range, in meters.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+## Methods
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+**Terabee()** Default constructor, requires calling the *Config* method to setup the serial port before *Begin*
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+**Terabee(HardwareSerial &ast;bus)** Constructor, which takes a pointer to the serial port that the Terabee is connected to.
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+**void Config(HardwareSerial &ast;bus)** Required to setup the serial port when using the default constructor.
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+**void op_mode(const OpMode mode)** Sets the operating mode. Available options are:
 
-## License
-For open source projects, say how it is licensed.
+| Enum | Description |
+| --- | --- |
+| OP_MODE_TOWER (default) | Tower operating mode |
+| OP_MODE_SEQ | Sequential operating mode |
+| OP_MODE_SIMULTANEOUS | Simultaneous operating mode |
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Please reference the manual for a detailed description of the operating mode.
+
+**OpMode op_mode()** Returns the operating mode.
+
+**void output_rate(const OutputRate rate)** Sets the output rate. Available options are:
+
+| Enum | Description |
+| --- | --- |
+| OUTPUT_RATE_ASAP (default) | Outputs data as soon as a measurement from each sensor is available |
+| OUTPUT_RATE_50HZ | OOutputs data at a rate of 50 Hz, regardless of whether each sensor is available |
+| OUTPUT_RATE_100HZ | Outputs data at a rate of 100 Hz, regardless of whether each sensor is available |
+| OUTPUT_RATE_250HZ | Outputs data at a rate of 250 Hz, regardless of whether each sensor is available |
+| OUTPUT_RATE_500HZ | Outputs data at a rate of 500 Hz, regardless of whether each sensor is available |
+| OUTPUT_RATE_600HZ | Outputs data at a rate of 600 Hz, regardless of whether each sensor is available |
+
+Please reference the manual for a detailed description of output rates. Note that for fixed rates, the rate seems to be set for a tower with 4 sensors and half the specified rate for a tower with 8 sensors.
+
+**OutputRate output_rate()** Returns the output rate.
+
+**bool Begin()** The *Begin* method should be called after the serial port, operating mode, and output rate are set. Establishes communication with the sensor and returns true on successfully configuring it.
+
+**bool Read(RangeData &ast; const data)** Returns true when new data is received. Should be passed a pointer to a *RangeData* object, which will be populated with the received sensor data.
+
+
