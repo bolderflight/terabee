@@ -147,21 +147,15 @@ bool Terabee::Parse() {
       }
     } else if (state_ < MSG_LEN_) {
       buf_[state_++] = cur_byte_;
-    } else if (state_ == MSG_LEN_) {
-      if (cur_byte_ == Crc8(0, buf_, MSG_LEN_)) {
-        dist_mm_[0] = (static_cast<uint16_t>(buf_[2]) << 8) | buf_[3];
-        dist_mm_[1] = (static_cast<uint16_t>(buf_[4]) << 8) | buf_[5];
-        dist_mm_[2] = (static_cast<uint16_t>(buf_[6]) << 8) | buf_[7];
-        dist_mm_[3] = (static_cast<uint16_t>(buf_[8]) << 8) | buf_[9];
-        dist_mm_[4] = (static_cast<uint16_t>(buf_[10]) << 8) | buf_[11];
-        dist_mm_[5] = (static_cast<uint16_t>(buf_[12]) << 8) | buf_[13];
-        dist_mm_[6] = (static_cast<uint16_t>(buf_[14]) << 8) | buf_[15];
-        dist_mm_[7] = (static_cast<uint16_t>(buf_[16]) << 8) | buf_[17];
-        mask_ = buf_[18];
+      if (state_ == MSG_LEN_) {
+        if (cur_byte_ == Crc8(0, buf_, MSG_LEN_ - 1)) {
         state_ = 0;
         return true;
+        } else {
+        state_ = 0;
+        return false;
+        }
       }
-      return false;
     } else {
       state_ = 0;
     }

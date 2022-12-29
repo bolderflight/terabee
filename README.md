@@ -134,7 +134,7 @@ Please reference the manual for a detailed description of the operating mode.
 | OUTPUT_RATE_500HZ | Outputs data at a rate of 500 Hz, regardless of whether each sensor is available |
 | OUTPUT_RATE_600HZ | Outputs data at a rate of 600 Hz, regardless of whether each sensor is available |
 
-Please reference the manual for a detailed description of output rates. Note that for fixed rates, the rate seems to be set for a tower with 4 sensors and half the specified rate for a tower with 8 sensors.
+Please reference the manual for a detailed description of output rates.
 
 **OutputRate output_rate()** Returns the output rate.
 
