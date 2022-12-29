@@ -12,7 +12,7 @@ if (DEFINED MCU)
   set(CMAKE_TOOLCHAIN_FILE "${mcu_support_SOURCE_DIR}/cmake/cortex.cmake")
   # Project information
   project(Terabee
-    VERSION 1.0.1
+    VERSION 1.0.2
     DESCRIPTION "Terabee driver"
     LANGUAGES CXX
   )
